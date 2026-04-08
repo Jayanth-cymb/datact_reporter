@@ -1,0 +1,54 @@
+name: Build Windows .exe
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm install
+
+      - name: Build frontend, copy assets, package .exe
+        working-directory: server
+        run: npm run package
+
+      - name: Verify build output
+        shell: pwsh
+        run: |
+          if (-Not (Test-Path "release/datact-reporter.exe")) {
+            Write-Error "Build failed: release/datact-reporter.exe not found"
+            exit 1
+          }
+          $size = (Get-Item "release/datact-reporter.exe").Length / 1MB
+          Write-Host "Built datact-reporter.exe ($([math]::Round($size, 2)) MB)"
+
+      - name: Upload .exe as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: datact-reporter-windows
+          path: release/datact-reporter.exe
+          retention-days: 30
+
+      - name: Create GitHub Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/datact-reporter.exe
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

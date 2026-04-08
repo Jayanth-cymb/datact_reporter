@@ -1,0 +1,40 @@
+{
+  "name": "datact-reporter-server",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": "src/index.js",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "seed": "node src/seed.js",
+    "build:client": "cd ../client && npm install && npm run build",
+    "build:assets": "node build.js",
+    "package": "npm run build:client && npm run build:assets && pkg . --output ../release/datact-reporter.exe"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.3.0",
+    "cron-parser": "^4.9.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^5.16.0"
+  },
+  "pkg": {
+    "scripts": [
+      "src/**/*.js"
+    ],
+    "assets": [
+      "src/schema.sql",
+      "public/**/*",
+      "node_modules/better-sqlite3/build/Release/*.node"
+    ],
+    "targets": [
+      "node20-win-x64"
+    ],
+    "outputPath": "../release"
+  }
+}
