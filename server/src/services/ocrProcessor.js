@@ -143,7 +143,6 @@ function parseOCRWordsToTable(words) {
 }
 
 module.exports = {
-  extractImagesFromPDF,
   ocrPDFBuffer,
   parseTextToTable,
   parseOCRWordsToTable
