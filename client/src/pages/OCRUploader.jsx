@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { api } from '../api.js';
+import { api, getToken } from '../api.js';
 
 export default function OCRUploader() {
   const [file, setFile] = useState(null);
@@ -46,7 +46,7 @@ export default function OCRUploader() {
       const response = await fetch('/api/ocr/process-and-export', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${getToken()}`
         },
         body: formData
       });
@@ -67,7 +67,7 @@ export default function OCRUploader() {
       const tableResponse = await fetch('/api/ocr/process', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${getToken()}`
         },
         body: formData2
       });
@@ -98,7 +98,7 @@ export default function OCRUploader() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${getToken()}`
         },
         body: JSON.stringify({ table: tableData })
       });
