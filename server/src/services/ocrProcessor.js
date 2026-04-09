@@ -1,13 +1,8 @@
-const pdfParse = require('pdf-parse');
+const pdfParse = require('pdf-parse/lib/pdf-parse.js');
 const Tesseract = require('tesseract.js');
-const pdfjsLib = require('pdfjs-dist');
+const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
 
-// Set up pdf.js worker
-try {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = require('pdfjs-dist/build/pdf.worker.min.js');
-} catch (err) {
-  console.warn('Could not load pdfjs worker');
-}
+// pdfjs worker setup (handled by legacy build)
 
 /**
  * Run OCR on a PDF buffer
@@ -20,12 +15,17 @@ async function ocrPDFBuffer(pdfBuffer, onProgress = null) {
   try {
     let extractedText = '';
 
+    // Convert Buffer to Uint8Array for pdfjs compatibility
+    const uint8Array = new Uint8Array(pdfBuffer);
+
     // Method 1: Try pdf-parse for quick text extraction
     try {
       console.log('Attempting text extraction with pdf-parse...');
       const data = await pdfParse(pdfBuffer);
-      extractedText = data.text;
-      console.log(`pdf-parse extracted ${extractedText.length} characters`);
+      if (data && data.text) {
+        extractedText = data.text;
+        console.log(`pdf-parse extracted ${extractedText.length} characters`);
+      }
     } catch (err) {
       console.warn('pdf-parse failed:', err.message);
     }
@@ -34,7 +34,7 @@ async function ocrPDFBuffer(pdfBuffer, onProgress = null) {
     if (!extractedText || extractedText.trim().length < 100) {
       try {
         console.log('Attempting text extraction with pdfjs...');
-        const pdf = await pdfjsLib.getDocument({ data: pdfBuffer }).promise;
+        const pdf = await pdfjsLib.getDocument({ data: uint8Array }).promise;
 
         if (pdf.numPages === 0) {
           throw new Error('PDF has no pages');
