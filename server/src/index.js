@@ -10,6 +10,7 @@ const instancesRoutes = require('./routes/instances.js');
 const approvalsRoutes = require('./routes/approvals.js');
 const schedulesRoutes = require('./routes/schedules.js');
 const dashboardRoutes = require('./routes/dashboard.js');
+const ocrRoutes = require('./routes/ocr.js');
 require('./db.js'); // ensure DB initialized
 
 const isPkg = !!process.pkg;
@@ -26,6 +27,7 @@ app.use('/api/instances', instancesRoutes);
 app.use('/api/approvals', approvalsRoutes);
 app.use('/api/schedules', schedulesRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/ocr', ocrRoutes);
 
 // --- Serve built frontend (production / packaged) ---
 const publicDir = path.join(__dirname, '..', 'public');

@@ -10,6 +10,7 @@ import InstanceFiller from './pages/InstanceFiller.jsx';
 import Inbox from './pages/Inbox.jsx';
 import ApprovalRules from './pages/ApprovalRules.jsx';
 import Schedules from './pages/Schedules.jsx';
+import OCRUploader from './pages/OCRUploader.jsx';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -51,6 +52,7 @@ export default function App() {
           <NavBtn active={view.name === 'templates' || view.name === 'templateEditor'} onClick={() => setView({ name: 'templates' })}>Templates</NavBtn>
           {isAdmin && (
             <>
+              <NavBtn active={view.name === 'ocr'} onClick={() => setView({ name: 'ocr' })}>PDF to Excel</NavBtn>
               <NavBtn active={view.name === 'rules'} onClick={() => setView({ name: 'rules' })}>Approval Rules</NavBtn>
               <NavBtn active={view.name === 'schedules'} onClick={() => setView({ name: 'schedules' })}>Schedules</NavBtn>
               <NavBtn active={view.name === 'users'} onClick={() => setView({ name: 'users' })}>Users</NavBtn>
@@ -92,6 +94,7 @@ export default function App() {
         {view.name === 'inbox' && (
           <Inbox onOpen={(id) => setView({ name: 'instanceFiller', id })} />
         )}
+        {view.name === 'ocr' && isAdmin && <OCRUploader />}
         {view.name === 'rules' && isAdmin && <ApprovalRules />}
         {view.name === 'schedules' && isAdmin && <Schedules />}
       </main>
