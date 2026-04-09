@@ -1,17 +1,83 @@
 const pdfParse = require('pdf-parse');
 const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
+const { spawn } = require('child_process');
+const path = require('path');
 
 // pdfjs worker is handled by the legacy build automatically
 
 /**
+ * Call Python PaddleOCR script via subprocess
+ */
+function callPaddleOCR(pdfBuffer) {
+  return new Promise((resolve, reject) => {
+    const scriptPath = path.join(__dirname, '..', '..', 'scripts', 'paddle_ocr.py');
+    const python = spawn('python3', [scriptPath], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 120000 // 2 minute timeout per page
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    python.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    python.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    python.on('error', (err) => {
+      reject(new Error(`Failed to spawn Python: ${err.message}`));
+    });
+
+    python.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`PaddleOCR script exited with code ${code}: ${stderr}`));
+        return;
+      }
+
+      try {
+        const result = JSON.parse(stdout);
+        if (result.success) {
+          resolve(result.table);
+        } else {
+          reject(new Error(result.error || 'Unknown PaddleOCR error'));
+        }
+      } catch (e) {
+        reject(new Error(`Failed to parse PaddleOCR output: ${e.message}`));
+      }
+    });
+
+    // Send PDF buffer to Python process
+    python.stdin.write(pdfBuffer);
+    python.stdin.end();
+  });
+}
+
+/**
  * Run OCR on a PDF buffer
  * Strategy:
- * 1. Try pdf-parse (works for embedded-text PDFs)
- * 2. Fall back to pdfjs text layer extraction
+ * 1. Try PaddleOCR (Python subprocess) - best accuracy for scanned PDFs
+ * 2. Fall back to pdf-parse (fast for text-based PDFs)
+ * 3. Fall back to pdfjs text layer extraction
  * Returns structured 2D table array
  */
 async function ocrPDFBuffer(pdfBuffer, onProgress = null) {
   try {
+    // Method 0: Try PaddleOCR first (best for scanned docs)
+    try {
+      console.log('Attempting OCR with PaddleOCR...');
+      const table = await callPaddleOCR(pdfBuffer);
+      if (table && table.length > 0) {
+        console.log('✓ PaddleOCR succeeded');
+        if (onProgress) onProgress(100);
+        return table;
+      }
+    } catch (err) {
+      console.warn('PaddleOCR not available or failed:', err.message);
+    }
+
     let extractedText = '';
 
     // Convert Buffer to Uint8Array for pdfjs compatibility
