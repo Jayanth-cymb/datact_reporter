@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import bcrypt from 'bcryptjs';
-import db from '../db.js';
-import { requireAuth, requireRole } from '../auth.js';
+const { Router } = require('express');
+const bcrypt = require('bcryptjs');
+const db = require('../db.js');
+const { requireAuth, requireRole } = require('../auth.js');
 
 const router = Router();
 
@@ -82,4 +82,4 @@ router.delete('/:id', (req, res) => {
   res.json({ ok: true });
 });
 
-export default router;
+module.exports = router;

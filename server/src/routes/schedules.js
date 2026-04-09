@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import cronParser from 'cron-parser';
-import db from '../db.js';
-import { requireAuth, requireRole } from '../auth.js';
+const { Router } = require('express');
+const cronParser = require('cron-parser');
+const db = require('../db.js');
+const { requireAuth, requireRole } = require('../auth.js');
 
 const router = Router();
 router.use(requireAuth);
@@ -62,4 +62,4 @@ router.get('/', (req, res) => {
   res.json({ schedules: rows });
 });
 
-export default router;
+module.exports = router;

@@ -1,11 +1,10 @@
-import { Router } from 'express';
-import db from '../db.js';
-import { requireAuth, requireRole } from '../auth.js';
+const { Router } = require('express');
+const db = require('../db.js');
+const { requireAuth, requireRole } = require('../auth.js');
 
 const router = Router();
 router.use(requireAuth);
 
-// Helper — get rule for a template
 function getRule(templateId) {
   const row = db.prepare('SELECT * FROM approval_rules WHERE template_id = ?').get(templateId);
   if (!row) return null;
@@ -15,13 +14,11 @@ function getRule(templateId) {
   };
 }
 
-// GET rule for a template (admin or logged-in user can read)
 router.get('/rules/:templateId', (req, res) => {
   const rule = getRule(Number(req.params.templateId));
   res.json({ rule });
 });
 
-// SET/UPDATE rule for a template (admin only)
 router.put('/rules/:templateId', requireRole('admin'), (req, res) => {
   const templateId = Number(req.params.templateId);
   const { required_count, approver_user_ids } = req.body || {};
@@ -48,13 +45,11 @@ router.put('/rules/:templateId', requireRole('admin'), (req, res) => {
   res.json({ ok: true, rule: getRule(templateId) });
 });
 
-// DELETE rule
 router.delete('/rules/:templateId', requireRole('admin'), (req, res) => {
   db.prepare('DELETE FROM approval_rules WHERE template_id = ?').run(Number(req.params.templateId));
   res.json({ ok: true });
 });
 
-// INBOX — pending instances awaiting this user's approval
 router.get('/inbox', (req, res) => {
   const userId = req.user.sub;
   const rows = db.prepare(`
@@ -68,7 +63,6 @@ router.get('/inbox', (req, res) => {
     ORDER BY i.submitted_at ASC
   `).all();
 
-  // Filter to ones where this user is an approver AND hasn't decided yet
   const inbox = [];
   for (const r of rows) {
     const rule = getRule(r.template_id);
@@ -90,7 +84,6 @@ router.get('/inbox', (req, res) => {
   res.json({ inbox });
 });
 
-// LIST approvals for an instance
 router.get('/instance/:id', (req, res) => {
   const id = Number(req.params.id);
   const approvals = db.prepare(`
@@ -104,7 +97,6 @@ router.get('/instance/:id', (req, res) => {
   res.json({ approvals });
 });
 
-// APPROVE an instance
 router.post('/instance/:id/approve', (req, res) => {
   const id = Number(req.params.id);
   const userId = req.user.sub;
@@ -140,7 +132,6 @@ router.post('/instance/:id/approve', (req, res) => {
   res.json({ ok: true, approved_count: approvedCount, required_count: rule.required_count });
 });
 
-// REJECT — one reject ends it
 router.post('/instance/:id/reject', (req, res) => {
   const id = Number(req.params.id);
   const userId = req.user.sub;
@@ -171,4 +162,4 @@ router.post('/instance/:id/reject', (req, res) => {
   res.json({ ok: true });
 });
 
-export default router;
+module.exports = router;

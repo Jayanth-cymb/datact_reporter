@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import bcrypt from 'bcryptjs';
-import db from '../db.js';
-import { signToken, requireAuth } from '../auth.js';
+const { Router } = require('express');
+const bcrypt = require('bcryptjs');
+const db = require('../db.js');
+const { signToken, requireAuth } = require('../auth.js');
 
 const router = Router();
 
@@ -45,4 +45,4 @@ router.post('/change-password', requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
-export default router;
+module.exports = router;

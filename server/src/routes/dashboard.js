@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import cronParser from 'cron-parser';
-import db from '../db.js';
-import { requireAuth } from '../auth.js';
+const { Router } = require('express');
+const cronParser = require('cron-parser');
+const db = require('../db.js');
+const { requireAuth } = require('../auth.js');
 
 const router = Router();
 router.use(requireAuth);
@@ -103,4 +103,4 @@ router.get('/overview', (req, res) => {
   });
 });
 
-export default router;
+module.exports = router;

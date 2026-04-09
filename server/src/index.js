@@ -1,19 +1,17 @@
-import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
-import path from 'node:path';
-import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import authRoutes from './routes/auth.js';
-import usersRoutes from './routes/users.js';
-import templatesRoutes from './routes/templates.js';
-import instancesRoutes from './routes/instances.js';
-import approvalsRoutes from './routes/approvals.js';
-import schedulesRoutes from './routes/schedules.js';
-import dashboardRoutes from './routes/dashboard.js';
-import './db.js'; // ensure DB initialized
+require('dotenv/config');
+const express = require('express');
+const cors = require('cors');
+const path = require('node:path');
+const fs = require('node:fs');
+const authRoutes = require('./routes/auth.js');
+const usersRoutes = require('./routes/users.js');
+const templatesRoutes = require('./routes/templates.js');
+const instancesRoutes = require('./routes/instances.js');
+const approvalsRoutes = require('./routes/approvals.js');
+const schedulesRoutes = require('./routes/schedules.js');
+const dashboardRoutes = require('./routes/dashboard.js');
+require('./db.js'); // ensure DB initialized
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isPkg = !!process.pkg;
 
 const app = express();
@@ -35,9 +33,7 @@ const indexHtmlPath = path.join(publicDir, 'index.html');
 const hasFrontend = fs.existsSync(indexHtmlPath);
 
 if (hasFrontend) {
-  // Serve static files
   app.use(express.static(publicDir));
-  // SPA fallback — for any non-/api route, serve index.html
   app.get(/^(?!\/api).*/, (req, res) => {
     res.sendFile(indexHtmlPath);
   });
@@ -46,7 +42,6 @@ if (hasFrontend) {
   console.log('No bundled frontend found (dev mode — use Vite client on :5173)');
 }
 
-// Generic error handler
 app.use((err, _req, res, _next) => {
   console.error(err);
   res.status(500).json({ error: 'Internal server error' });

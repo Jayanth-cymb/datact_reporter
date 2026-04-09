@@ -1,11 +1,10 @@
-import { Router } from 'express';
-import db from '../db.js';
-import { requireAuth } from '../auth.js';
+const { Router } = require('express');
+const db = require('../db.js');
+const { requireAuth } = require('../auth.js');
 
 const router = Router();
 router.use(requireAuth);
 
-// LIST instances. Filters: status, template_id, mine=1
 router.get('/', (req, res) => {
   const { status, template_id, mine } = req.query;
   const where = [];
@@ -28,7 +27,6 @@ router.get('/', (req, res) => {
   res.json({ instances: rows });
 });
 
-// GET ONE — full data including template sheet_json + input_cells + filled_data
 router.get('/:id', (req, res) => {
   const id = Number(req.params.id);
   const inst = db.prepare('SELECT * FROM instances WHERE id = ?').get(id);
@@ -49,7 +47,6 @@ router.get('/:id', (req, res) => {
   });
 });
 
-// CREATE — start a new instance from a template
 router.post('/', (req, res) => {
   const { template_id } = req.body || {};
   if (!template_id) return res.status(400).json({ error: 'template_id required' });
@@ -62,7 +59,6 @@ router.post('/', (req, res) => {
   res.status(201).json({ id: result.lastInsertRowid });
 });
 
-// UPDATE filled_data (draft only, creator only)
 router.patch('/:id', (req, res) => {
   const id = Number(req.params.id);
   const inst = db.prepare('SELECT * FROM instances WHERE id = ?').get(id);
@@ -80,7 +76,6 @@ router.patch('/:id', (req, res) => {
   res.json({ ok: true });
 });
 
-// SUBMIT — change status to pending
 router.post('/:id/submit', (req, res) => {
   const id = Number(req.params.id);
   const inst = db.prepare('SELECT * FROM instances WHERE id = ?').get(id);
@@ -101,7 +96,6 @@ router.post('/:id/submit', (req, res) => {
   res.json({ ok: true });
 });
 
-// DELETE (creator only, draft only)
 router.delete('/:id', (req, res) => {
   const id = Number(req.params.id);
   const inst = db.prepare('SELECT * FROM instances WHERE id = ?').get(id);
@@ -116,4 +110,4 @@ router.delete('/:id', (req, res) => {
   res.json({ ok: true });
 });
 
-export default router;
+module.exports = router;

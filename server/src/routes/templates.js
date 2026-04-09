@@ -1,12 +1,11 @@
-import { Router } from 'express';
-import db from '../db.js';
-import { requireAuth, requireRole } from '../auth.js';
+const { Router } = require('express');
+const db = require('../db.js');
+const { requireAuth, requireRole } = require('../auth.js');
 
 const router = Router();
 
 router.use(requireAuth);
 
-// LIST — all authenticated users can list (operators need to see what to fill)
 router.get('/', (req, res) => {
   const rows = db.prepare(`
     SELECT id, name, description, created_by, created_at
@@ -16,7 +15,6 @@ router.get('/', (req, res) => {
   res.json({ templates: rows });
 });
 
-// GET ONE — full sheet data + input cells
 router.get('/:id', (req, res) => {
   const id = Number(req.params.id);
   const row = db.prepare('SELECT * FROM templates WHERE id = ?').get(id);
@@ -30,7 +28,6 @@ router.get('/:id', (req, res) => {
   });
 });
 
-// CREATE — admin only
 router.post('/', requireRole('admin'), (req, res) => {
   const { name, description, sheet_json, input_cells } = req.body || {};
   if (!name || !sheet_json) {
@@ -50,7 +47,6 @@ router.post('/', requireRole('admin'), (req, res) => {
   res.status(201).json({ id: result.lastInsertRowid });
 });
 
-// UPDATE — admin only (name, description, sheet_json, input_cells)
 router.patch('/:id', requireRole('admin'), (req, res) => {
   const id = Number(req.params.id);
   const existing = db.prepare('SELECT id FROM templates WHERE id = ?').get(id);
@@ -70,7 +66,6 @@ router.patch('/:id', requireRole('admin'), (req, res) => {
   res.json({ ok: true });
 });
 
-// DELETE — admin only
 router.delete('/:id', requireRole('admin'), (req, res) => {
   const id = Number(req.params.id);
   const result = db.prepare('DELETE FROM templates WHERE id = ?').run(id);
@@ -78,4 +73,4 @@ router.delete('/:id', requireRole('admin'), (req, res) => {
   res.json({ ok: true });
 });
 
-export default router;
+module.exports = router;

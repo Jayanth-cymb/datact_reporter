@@ -1,6 +1,6 @@
-import 'dotenv/config';
-import bcrypt from 'bcryptjs';
-import db from './db.js';
+require('dotenv/config');
+const bcrypt = require('bcryptjs');
+const db = require('./db.js');
 
 const email = process.env.ADMIN_EMAIL || 'admin@datact.com';
 const password = process.env.ADMIN_PASSWORD || 'admin@1234';

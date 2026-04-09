@@ -1,10 +1,10 @@
-import jwt from 'jsonwebtoken';
-import 'dotenv/config';
+const jwt = require('jsonwebtoken');
+require('dotenv/config');
 
 const SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 const TOKEN_TTL = '7d';
 
-export function signToken(user) {
+function signToken(user) {
   return jwt.sign(
     { sub: user.id, email: user.email, role: user.role, name: user.name },
     SECRET,
@@ -12,7 +12,7 @@ export function signToken(user) {
   );
 }
 
-export function verifyToken(token) {
+function verifyToken(token) {
   try {
     return jwt.verify(token, SECRET);
   } catch {
@@ -20,7 +20,7 @@ export function verifyToken(token) {
   }
 }
 
-export function requireAuth(req, res, next) {
+function requireAuth(req, res, next) {
   const header = req.headers.authorization || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : null;
   if (!token) return res.status(401).json({ error: 'No token' });
@@ -30,7 +30,7 @@ export function requireAuth(req, res, next) {
   next();
 }
 
-export function requireRole(...roles) {
+function requireRole(...roles) {
   return (req, res, next) => {
     if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
     if (!roles.includes(req.user.role)) {
@@ -39,3 +39,5 @@ export function requireRole(...roles) {
     next();
   };
 }
+
+module.exports = { signToken, verifyToken, requireAuth, requireRole };

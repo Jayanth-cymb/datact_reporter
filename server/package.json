@@ -1,7 +1,6 @@
 {
   "name": "datact-reporter-server",
   "version": "0.1.0",
-  "type": "module",
   "bin": "src/index.js",
   "scripts": {
     "dev": "node --watch src/index.js",
